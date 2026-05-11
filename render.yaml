@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: arkaios-n8n
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: N8N_HOST
+        value: arkaios-n8n.onrender.com
+      - key: N8N_PORT
+        value: 10000
+      - key: N8N_PROTOCOL
+        value: https
+      - key: WEBHOOK_URL
+        value: https://arkaios-n8n.onrender.com
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: true
+      - key: N8N_BASIC_AUTH_USER
+        value: arkaios
+      - key: N8N_BASIC_AUTH_PASSWORD
+        sync: false
+      - key: N8N_ENCRYPTION_KEY
+        sync: false
+      - key: GENERIC_TIMEZONE
+        value: America/Mexico_City
+      - key: NODE_ENV
+        value: production

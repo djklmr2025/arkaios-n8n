@@ -1,0 +1,147 @@
+{
+  "name": "ARKAIOS Gateway v3 — Webhook + Gemini HTTP + Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "arkaios-gateway",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-300, 300],
+      "id": "62c74775-db02-4fe5-8474-16f3be833c85",
+      "name": "Webhook",
+      "webhookId": "9f50b084-82af-4f53-b832-180823f7c755",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "iEAhYaAkYmcQ1v3T",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDZTeHXVp4Rzd8tKerTMpbG_sND14xUHyY",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Eres ELEMIA, sistema de seguridad y análisis del ecosistema ARKAIOS. Analiza este evento entrante y clasifícalo.\\n\\nEVENT_TYPE: {{ $('Webhook').first().json.body.EVENT_TYPE || 'UNKNOWN' }}\\nSOURCE_IP: {{ $('Webhook').first().json.body.SOURCE_IP || 'desconocida' }}\\nNOTES: {{ $('Webhook').first().json.body.NOTES || '' }}\\n\\nResponde SOLO con un JSON válido sin markdown, sin explicaciones adicionales, con exactamente este formato:\\n{\\\"classification\\\": \\\"AMENAZA|ACTIVIDAD_NORMAL|EVENTO_CRITICO|AGENTE_AUTORIZADO\\\", \\\"confidence\\\": 0.95, \\\"summary\\\": \\\"Una línea explicando el evento\\\", \\\"action\\\": \\\"REGISTRAR|ALERTAR|BLOQUEAR|MONITOREAR\\\"}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"maxOutputTokens\": 256\n  }\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-60, 300],
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "ELEMIA — Gemini HTTP"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parsear respuesta de Gemini y preparar fila para Sheets\nconst geminiResponse = $input.first().json;\n\n// Extraer el texto de la respuesta de Gemini\nlet rawText = '';\ntry {\n  rawText = geminiResponse.candidates[0].content.parts[0].text || '';\n} catch(e) {\n  rawText = JSON.stringify(geminiResponse);\n}\n\n// Parsear el JSON que devuelve Gemini\nlet analysis = {\n  classification: 'SIN_CLASIFICAR',\n  confidence: 0,\n  summary: rawText.substring(0, 200),\n  action: 'REGISTRAR'\n};\n\ntry {\n  const clean = rawText.replace(/```json|```/g, '').trim();\n  const parsed = JSON.parse(clean);\n  analysis = { ...analysis, ...parsed };\n} catch(e) {\n  analysis.summary = rawText.substring(0, 300);\n}\n\n// Datos originales del webhook\nconst body = $('Webhook').first().json.body || {};\nconst headers = $('Webhook').first().json.headers || {};\n\nreturn [{\n  json: {\n    TIMESTAMP: new Date().toISOString(),\n    EVENT_TYPE: body.EVENT_TYPE || 'UNKNOWN',\n    SOURCE_IP: body.SOURCE_IP || headers['x-forwarded-for'] || 'N/A',\n    PAYLOAD: JSON.stringify(body.PAYLOAD || {}),\n    STATUS: analysis.action,\n    NOTES: body.NOTES || '',\n    IA_ANALYSIS: `[${analysis.classification}] ${analysis.summary} (confianza: ${Math.round((analysis.confidence || 0) * 100)}%)`,\n    IA_CLASSIFICATION: analysis.classification,\n    IA_ACTION: analysis.action,\n    IA_CONFIDENCE: String(analysis.confidence || 0)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [180, 300],
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Preparar fila ARKAIOS"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1xfMi6qiUmPweO3mv7Z256-uZFBu4MIfQlnbnHIGv_KI",
+          "mode": "list",
+          "cachedResultName": "ARKAIOS_CENTRAL_LOG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xfMi6qiUmPweO3mv7Z256-uZFBu4MIfQlnbnHIGv_KI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xfMi6qiUmPweO3mv7Z256-uZFBu4MIfQlnbnHIGv_KI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TIMESTAMP":         "={{ $json.TIMESTAMP }}",
+            "EVENT_TYPE":        "={{ $json.EVENT_TYPE }}",
+            "SOURCE_IP":         "={{ $json.SOURCE_IP }}",
+            "PAYLOAD":           "={{ $json.PAYLOAD }}",
+            "STATUS":            "={{ $json.STATUS }}",
+            "NOTES":             "={{ $json.NOTES }}",
+            "IA_ANALYSIS":       "={{ $json.IA_ANALYSIS }}",
+            "IA_CLASSIFICATION": "={{ $json.IA_CLASSIFICATION }}",
+            "IA_ACTION":         "={{ $json.IA_ACTION }}",
+            "IA_CONFIDENCE":     "={{ $json.IA_CONFIDENCE }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "TIMESTAMP",         "displayName": "TIMESTAMP",         "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "EVENT_TYPE",        "displayName": "EVENT_TYPE",        "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "SOURCE_IP",         "displayName": "SOURCE_IP",         "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "PAYLOAD",           "displayName": "PAYLOAD",           "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "STATUS",            "displayName": "STATUS",            "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "NOTES",             "displayName": "NOTES",             "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "IA_ANALYSIS",       "displayName": "IA_ANALYSIS",       "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "IA_CLASSIFICATION", "displayName": "IA_CLASSIFICATION", "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "IA_ACTION",         "displayName": "IA_ACTION",         "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true },
+            { "id": "IA_CONFIDENCE",     "displayName": "IA_CONFIDENCE",     "type": "string", "required": false, "defaultMatch": false, "display": true, "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [420, 300],
+      "id": "fdc61da3-31e1-4bd7-8e9f-64b762d757fc",
+      "name": "ARKAIOS_CENTRAL_LOG",
+      "credentials": {
+        "googleApi": {
+          "id": "5wHWnh4KlciaFl6q",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "ELEMIA — Gemini HTTP", "type": "main", "index": 0 }]]
+    },
+    "ELEMIA — Gemini HTTP": {
+      "main": [[{ "node": "Preparar fila ARKAIOS", "type": "main", "index": 0 }]]
+    },
+    "Preparar fila ARKAIOS": {
+      "main": [[{ "node": "ARKAIOS_CENTRAL_LOG", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "instanceId": "b47e772e49c691bc7f392f1d47283855e17cf2fe3ebcf891b7e2094f3582fcfe"
+  },
+  "tags": []
+}
