@@ -14,12 +14,6 @@ services:
         value: https
       - key: WEBHOOK_URL
         value: https://arkaios-n8n.onrender.com
-      - key: N8N_BASIC_AUTH_ACTIVE
-        value: true
-      - key: N8N_BASIC_AUTH_USER
-        value: arkaios
-      - key: N8N_BASIC_AUTH_PASSWORD
-        sync: false
       - key: N8N_ENCRYPTION_KEY
         sync: false
       - key: GENERIC_TIMEZONE

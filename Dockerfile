@@ -10,7 +10,6 @@ ENV N8N_HOST=arkaios-n8n.onrender.com
 ENV WEBHOOK_URL=https://arkaios-n8n.onrender.com
 ENV DB_TYPE=sqlite
 ENV DB_SQLITE_DATABASE_FILE=/home/node/.n8n/database.sqlite
-ENV N8N_USER_MANAGEMENT_DISABLED=true
 ENV N8N_DIAGNOSTICS_ENABLED=false
 ENV N8N_HIRING_BANNER_ENABLED=false
 ENV N8N_RUNNERS_ENABLED=false
