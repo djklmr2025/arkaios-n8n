@@ -20,3 +20,11 @@ services:
         value: America/Mexico_City
       - key: NODE_ENV
         value: production
+      - key: N8N_DIAGNOSTICS_ENABLED
+        value: false
+      - key: N8N_RUNNERS_ENABLED
+        value: false
+      - key: DB_TYPE
+        value: sqlite
+      - key: DB_SQLITE_DATABASE_FILE
+        value: /home/node/.n8n/database.sqlite

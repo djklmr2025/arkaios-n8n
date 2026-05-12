@@ -1,7 +1,16 @@
 FROM n8nio/n8n:1.47.1
 
 USER root
-RUN mkdir -p /home/node/.n8n && chown -R node:node /home/node/.n8n
+
+# Crear directorio de datos con permisos correctos
+RUN mkdir -p /home/node/.n8n && \
+    chown -R node:node /home/node/.n8n && \
+    chmod -R 755 /home/node/.n8n
+
+# Precalentar la caché de comandos de oclif para evitar el error "File not found"
+RUN cd /usr/local/lib/node_modules/n8n && \
+    node -e "try { require('@oclif/core'); } catch(e) {}" || true
+
 USER node
 
 ENV N8N_PORT=10000
@@ -14,5 +23,6 @@ ENV N8N_DIAGNOSTICS_ENABLED=false
 ENV N8N_HIRING_BANNER_ENABLED=false
 ENV N8N_RUNNERS_ENABLED=false
 ENV GENERIC_TIMEZONE=America/Mexico_City
+ENV NODE_OPTIONS=--max-old-space-size=256
 
 EXPOSE 10000
