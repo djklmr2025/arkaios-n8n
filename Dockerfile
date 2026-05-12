@@ -1,11 +1,19 @@
-FROM n8nio/n8n:1.22.6
+FROM node:18-alpine
 
-USER root
+# Instalar dependencias del sistema necesarias para n8n
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl
 
-# Crear directorio de datos con permisos correctos
+# Instalar n8n globalmente desde npm (npm resuelve correctamente los binarios de oclif)
+RUN npm install -g n8n@1.22.6 --omit=dev
+
+# Crear directorio de datos y usuario
 RUN mkdir -p /home/node/.n8n && \
-    chown -R node:node /home/node/.n8n && \
-    chmod -R 755 /home/node/.n8n
+    chown -R node:node /home/node/.n8n
 
 USER node
 
@@ -22,3 +30,5 @@ ENV GENERIC_TIMEZONE=America/Mexico_City
 ENV NODE_OPTIONS=--max-old-space-size=256
 
 EXPOSE 10000
+
+CMD ["n8n", "start"]
