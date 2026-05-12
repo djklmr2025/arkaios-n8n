@@ -1,4 +1,4 @@
-FROM n8nio/n8n:1.47.1
+FROM n8nio/n8n:1.22.6
 
 USER root
 
@@ -6,10 +6,6 @@ USER root
 RUN mkdir -p /home/node/.n8n && \
     chown -R node:node /home/node/.n8n && \
     chmod -R 755 /home/node/.n8n
-
-# Precalentar la caché de comandos de oclif para evitar el error "File not found"
-RUN cd /usr/local/lib/node_modules/n8n && \
-    node -e "try { require('@oclif/core'); } catch(e) {}" || true
 
 USER node
 
