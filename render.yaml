@@ -1,38 +1,19 @@
 services:
   - type: web
     name: arkaios-n8n
-    runtime: image
+    runtime: docker
+    repo: https://github.com/djklmr2025/arkaios-n8n
+    branch: main
+    dockerfilePath: ./Dockerfile
     plan: free
-    image:
-      url: docker.io/n8nio/n8n:1.83.2
-    healthCheckPath: /healthz
+    region: oregon
     envVars:
-      - key: PORT
-        value: 5678
-      - key: N8N_PORT
-        value: 5678
-      - key: N8N_PROTOCOL
-        value: https
-      - key: N8N_HOST
-        sync: false
-      - key: WEBHOOK_URL
-        sync: false
-      - key: N8N_EDITOR_BASE_URL
-        sync: false
-      - key: N8N_ENCRYPTION_KEY
-        generateValue: true
-      - key: GENERIC_TIMEZONE
-        value: America/Mexico_City
-      - key: NODE_ENV
-        value: production
-      - key: N8N_DIAGNOSTICS_ENABLED
-        value: "false"
-      - key: N8N_HIRING_BANNER_ENABLED
-        value: "false"
-      - key: N8N_RUNNERS_ENABLED
-        value: "false"
       - key: DB_TYPE
         value: postgresdb
+      - key: DB_POSTGRESDB_DATABASE
+        fromDatabase:
+          name: arkaios-n8n-db
+          property: database
       - key: DB_POSTGRESDB_HOST
         fromDatabase:
           name: arkaios-n8n-db
@@ -41,10 +22,6 @@ services:
         fromDatabase:
           name: arkaios-n8n-db
           property: port
-      - key: DB_POSTGRESDB_DATABASE
-        fromDatabase:
-          name: arkaios-n8n-db
-          property: database
       - key: DB_POSTGRESDB_USER
         fromDatabase:
           name: arkaios-n8n-db
@@ -53,7 +30,20 @@ services:
         fromDatabase:
           name: arkaios-n8n-db
           property: password
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: WEBHOOK_URL
+        value: https://arkaios-n8n.onrender.com
+      - key: GENERIC_TIMEZONE
+        value: America/Mexico_City
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_BASIC_AUTH_USER
+        value: admin
+      - key: N8N_BASIC_AUTH_PASSWORD
+        generateValue: true
 
 databases:
   - name: arkaios-n8n-db
     plan: free
+    region: oregon
