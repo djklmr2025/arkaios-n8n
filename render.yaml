@@ -34,6 +34,10 @@ services:
         generateValue: true
       - key: WEBHOOK_URL
         value: https://arkaios-n8n.onrender.com
+      - key: N8N_HOST
+        value: arkaios-n8n.onrender.com
+      - key: N8N_EDITOR_BASE_URL
+        value: https://arkaios-n8n.onrender.com/
       - key: GENERIC_TIMEZONE
         value: America/Mexico_City
       - key: N8N_BASIC_AUTH_ACTIVE
