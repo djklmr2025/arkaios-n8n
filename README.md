@@ -19,6 +19,7 @@ Blueprint de Render para desplegar `n8n` con `Render Postgres`.
    - `N8N_HOST`
    - `WEBHOOK_URL`
    - `N8N_EDITOR_BASE_URL`
+- `N8N_PUSH_BACKEND`: Needs to be set to `websocket` to allow UI live-updates and collaboration features on platforms that do not support Server-Sent Events easily (like some PaaS platforms). WebSocket push provides more stable connection for the n8n UI on Render.
 5. Lanza el Blueprint
 
 ## Valores sugeridos
